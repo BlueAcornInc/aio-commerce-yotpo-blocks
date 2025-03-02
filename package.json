@@ -1,7 +1,7 @@
 {
     "name": "@blueacorninc/aio-commerce-yotpo-blocks",
-    "version": "0.2.0",
-    "description": "A package to copy blocks to the source project's blocks directory",
+    "version": "0.3.0",
+    "description": "Yotpo Block Collection for Adobe Commerce Storefront and AEM Edge Delivery Services",
     "scripts": {
         "postinstall": "find . -maxdepth 1 -type d ! -path . -exec sh -c 'cp -r {} $INIT_CWD/blocks/$(basename {})' \\;"
     },
