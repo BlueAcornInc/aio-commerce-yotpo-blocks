@@ -1,5 +1,5 @@
 {
-    "name": "@blueacornici/aio-commerce-yotpo-blocks",
+    "name": "@blueacorninc/aio-commerce-yotpo-blocks",
     "version": "0.1.0",
     "description": "A package to copy blocks to the source project's blocks directory",
     "scripts": {
