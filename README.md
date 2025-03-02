@@ -1,6 +1,6 @@
-# Yotpo Reviews
+# Yotpo Block Library for Adobe Commerce Storefront
 
-Yotpo Review block for Adobe Commerce Storefront
+Yotpo Review blocks for Adobe Commerce Storefront
 
 * [Yotpo Reviews Installation Guide](https://support.yotpo.com/docs/generic-other-platforms-installing-yotpo-reviews-v3)
 * [Yotpo Dashoard](https://reviews.yotpo.com/#/home)
