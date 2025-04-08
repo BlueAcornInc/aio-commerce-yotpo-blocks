@@ -1,85 +1,55 @@
 import { getConfigValue } from '../../scripts/configs.js';
+import { loadScript } from '../../scripts/aem.js';
 
 export default async function decorate(block) {
-    const domReady = funcArg => {
-        'loading' !== document.readyState ? funcArg() : document.addEventListener('DOMContentLoaded', e)
-    };
+  const buildBlock = (configs) => {
+    const yotpoReviewsEl = document.createElement('div');
+    configs?.forEach((config) => {
+      yotpoReviewsEl.setAttribute(config.attr, config.value);
+    });
+    block.appendChild(yotpoReviewsEl);
+  };
 
-    const config = {
-        baseUrl: 'https://cdn-widgetsrepository.yotpo.com/v1/loader/',
-        defaultStoreId: '2DscstHDudRbdPAOzC5foy1bLIBMZjhtyDjmsDJq',
-        secretKey: await getConfigValue('yotpo-secret-key'),
-        storeId: await getConfigValue('yotpo-store-id'),
-    };
+  const config = {
+    baseUrl: 'https://cdn-widgetsrepository.yotpo.com/v1/loader',
+    endpoint: await getConfigValue('yotpo-config-url'),
+    currency: await getConfigValue('commerce-base-currency-code'),
+  };
 
-    try {
-        // Function to load external scripts
-        const loadScript = (src) => {
-            return new Promise((resolve, reject) => {
-                const script = document.createElement('script');
-                script.src = src;
-                script.async = true;
-                script.onload = resolve;
-                script.onerror = reject;
-                document.head.appendChild(script);
-            });
-        };
-        const scriptUrl = !!config.storeId ? `${config.baseUrl}${config.storeId}` : `${config.baseUrl}${config.defaultStoreId}`;
-        // Load Yotpo script if not already loaded
-        if (!document.querySelector(`script[src='${scriptUrl}']`)) {
-            await loadScript(scriptUrl);
-        }
+  const yotpoInstanceId = await getConfigValue('yotpo-instance-id');
 
-        // Create and append the Yotpo widget instance
-        const widgetConfig = {
-            "instance-id": '1039593',
-            "product-id": location.pathname.slice(location.pathname.lastIndexOf('/') + 1) || '24-UG04',
-            "name": document.querySelector('div.pdp-header__title').innerText,
-            "url": location.toString(),
-            "image-url": `https:${document.querySelector('.pdp-carousel__slide>img').getAttribute('src')}`,
-            "price": document.querySelector('.dropin-price').innerText.slice(1) || '0',
-            "currency": 'USD'
-        }
-        const yotpoWidget = document.createElement('div');
-        yotpoWidget.className = 'yotpo-widget-instance';
-        Object.entries(widgetConfig).forEach(([key, value]) => {
-            yotpoWidget.setAttribute(`data-yotpo-${key}`, value);
-        });
-        
-        // yotpoWidget.setAttribute('data-yotpo-instance-id', '1039593');
-        // yotpoWidget.setAttribute('data-yotpo-product-id', '1');
-        // yotpoWidget.setAttribute('data-yotpo-name', 'samtest');
-        // yotpoWidget.setAttribute('data-yotpo-url', 'http://localhost:3000/products/zing-jump-rope/24-UG04');
-        // yotpoWidget.setAttribute('data-yotpo-image-url', 'https://stage-sandbox.m2cloud.blueacorn.net/media/catalog/product/u/g/ug04-bk-0.jpg');
-        // yotpoWidget.setAttribute('data-yotpo-price', '50');
-        // yotpoWidget.setAttribute('data-yotpo-currency', 'USD');
+  const widgetConfig = [
+    // To Do, To-Do. Remove hard-coded yotpo-instance-id. I requested this be added to the Admin UI for Yotpo Config Editor.
+    { attr: 'data-yotpo-instance-id', value: yotpoInstanceId },
+    { attr: 'data-yotpo-product-id', value: window.location.pathname.slice(window.location.pathname.lastIndexOf('/') + 1) },
+    { attr: 'data-yotpo-name', value: document.querySelector('div.pdp-header__title').innerText },
+    { attr: 'data-yotpo-url', value: window.location.toString() },
+    { attr: 'data-yotpo-image-url', value: `https:${document.querySelector('.pdp-carousel__slide>img')?.getAttribute('src')}` },
+    { attr: 'data-yotpo-price', value: document.querySelector('.dropin-price')?.innerText?.slice(1) },
+    { attr: 'data-yotpo-currency', value: config.currency },
+    { attr: 'class', value: 'yotpo-widget-instance' },
+  ];
 
-        block.appendChild(yotpoWidget);
+  console.log('test', widgetConfig);
+  
+  const addLoaderScript = ({ loaderScriptUrl }) => {
+    loadScript(loaderScriptUrl);
+    buildBlock(widgetConfig);
+  };
 
-    } catch (error) {
-        console.error('Error loading Yotpo script:', error);
-    }
-
-    // fetch reviews for a product
-    const reviewsForProduct = (productId) => {
-        const url = `https://api-cdn.yotpo.com/v1/widget/${config.storeId}/products/${productId}/reviews.json`;
-        const options = {
-            method: 'GET',
-            headers: { Accept: 'application/json', 'Content-Type': 'application/json' }
-        };
-
-        fetch(url, options)
-            .then(res => res.json())
-            .then(json => {
-                console.log(`%c Fetch reviews for product id:${productId}`, `background: #236df5`);
-                console.log(json);
-                return json;
-            })
-            .catch(err => console.error('error:' + err));
-    }
-
-    domReady(() => {
-        const productId = document.head.querySelector(`meta[name='yotpo-id']`)?.getAttribute('content') || 1;
-        reviewsForProduct(productId);
+  fetch(config?.endpoint)
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`config.endpoint response: ${response.statusText}`);
+      }
+      return response.json();
+    })
+    .then((data) => {
+      config.data = data?.config;
+      config.loaderScriptUrl = `${config?.baseUrl}/${data?.config?.appKey}`;
+      addLoaderScript(config);
+    })
+    .catch((error) => {
+      console.error('Fetch error:', error);
     });
 }
