@@ -34,7 +34,7 @@ export default async function decorate(block) {
         const widgetConfig = {
             "instance-id": '1039593',
             "product-id": location.pathname.slice(location.pathname.lastIndexOf('/') + 1) || '24-UG04',
-            "name": 'evergreen',
+            "name": document.querySelector('div.pdp-header__title').innerText,
             "url": location.toString(),
             "image-url": `https:${document.querySelector('.pdp-carousel__slide>img').getAttribute('src')}`,
             "price": document.querySelector('.dropin-price').innerText.slice(1) || '0',
